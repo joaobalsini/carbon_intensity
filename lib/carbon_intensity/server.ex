@@ -72,7 +72,6 @@ defmodule CarbonIntensity.Server do
       CarbonIntensity.Rabbitmq.StoreDataPublisher,
       Jason.encode!(%{data: data})
     )
-    |> IO.inspect()
   end
 
   # returns the difference, in milliseconds, between current time and next refresh
