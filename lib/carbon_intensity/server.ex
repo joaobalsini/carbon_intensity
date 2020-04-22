@@ -45,6 +45,9 @@ defmodule CarbonIntensity.Server do
       {:ok, data} ->
         Logger.info("#{actual_time_utc} (UTC) - Successfully loaded data: #{inspect(data)}")
         state = Map.put(state, :data, data)
+
+        save_result(data)
+
         setup_data_refresh(calculate_next_refresh())
         {:noreply, state}
 
@@ -62,6 +65,14 @@ defmodule CarbonIntensity.Server do
         Logger.info("#{actual_time_utc} (UTC) - Error loading data #{inspect(other)} ")
         {:noreply, state}
     end
+  end
+
+  defp save_result(data) do
+    GenRMQ.Publisher.publish(
+      CarbonIntensity.Rabbitmq.StoreDataPublisher,
+      Jason.encode!(%{data: data})
+    )
+    |> IO.inspect()
   end
 
   # returns the difference, in milliseconds, between current time and next refresh

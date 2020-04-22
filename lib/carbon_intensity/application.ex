@@ -7,6 +7,14 @@ defmodule CarbonIntensity.Application do
 
   def start(_type, _args) do
     children = [
+      %{
+        id: CarbonIntensity.Rabbitmq.StoreDataConsumer,
+        start: {CarbonIntensity.Rabbitmq.StoreDataConsumer, :start_link, []}
+      },
+      %{
+        id: CarbonIntensity.Rabbitmq.StoreDataPublisher,
+        start: {CarbonIntensity.Rabbitmq.StoreDataPublisher, :start_link, []}
+      },
       {CarbonIntensity.Server, []}
     ]
 
