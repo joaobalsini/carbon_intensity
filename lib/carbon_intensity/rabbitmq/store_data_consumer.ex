@@ -21,6 +21,20 @@ defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
   end
 
   def handle_message(message) do
-    IO.inspect(message)
+    # this is internal data and we trust it
+    {:ok, %{"data" => %{"actual_intensity" => actual_intensity, "to" => to}}} =
+      Jason.decode(message.payload)
+
+    timestamp =
+      to
+      |> NaiveDateTime.from_iso8601!()
+      |> DateTime.from_naive!("Etc/UTC")
+      |> DateTime.to_unix(:microsecond)
+
+    data = %CarbonIntensity.InfluxdbSerie{}
+    data = %{data | timestamp: timestamp * 1000}
+    data = %{data | fields: %{data.fields | actual_value: actual_intensity}}
+
+    CarbonIntensity.InfluxdbConnection.write(data, async: true)
   end
 end

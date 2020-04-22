@@ -11,6 +11,30 @@ services:
       - ./docker/rabbitmq/plugins:/etc/rabbitmq/enabled_plugins
       - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
       - rabbitmq-data:/var/lib/rabbitmq
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=carbon_intensity
+      - INFLUXDB_ADMIN_USER=influxdb
+      - INFLUXDB_ADMIN_PASSWORD=influxdb
+  chronograf:
+    image: chronograf:latest
+    ports:
+      - '127.0.0.1:8888:8888'
+    volumes:
+      - chronograf-storage:/var/lib/chronograf
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_USERNAME=influxdb
+      - INFLUXDB_PASSWORD=influxdb
 
 volumes:
   rabbitmq-data: {}
+  influxdb-storage:
+  chronograf-storage:

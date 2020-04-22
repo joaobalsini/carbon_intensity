@@ -15,6 +15,7 @@ defmodule CarbonIntensity.Application do
         id: CarbonIntensity.Rabbitmq.StoreDataPublisher,
         start: {CarbonIntensity.Rabbitmq.StoreDataPublisher, :start_link, []}
       },
+      CarbonIntensity.InfluxdbConnection,
       {CarbonIntensity.Server, []}
     ]
 
