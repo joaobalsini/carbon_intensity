@@ -29,7 +29,9 @@ defmodule CarbonIntensity.MixProject do
       {:jason, "~> 1.2.0"},
       {:mox, "~> 0.5", only: :test},
       {:gen_rmq, "~> 2.6.0"},
-      {:instream, "~> 0.22"}
+      {:instream, "~> 0.22"},
+      {:broadway, "~> 0.6.0"},
+      {:broadway_rabbitmq, "~> 0.6.0"}
 
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]

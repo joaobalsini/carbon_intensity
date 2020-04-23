@@ -1,4 +1,4 @@
-defmodule CarbonIntensity.Server do
+defmodule CarbonIntensity.ActualDataServer do
   @moduledoc """
   Server is responsible for loading actual data at periodic times and store the latest value until it's saved on the database.
   """
@@ -33,12 +33,12 @@ defmodule CarbonIntensity.Server do
 
   @impl true
   def init(%State{} = state) do
-    setup_data_refresh(1_000)
+    schedule_load_actual(1_000)
     {:ok, state}
   end
 
   @impl true
-  def handle_info(:get, %State{} = state) do
+  def handle_info(:get_actual, %State{} = state) do
     actual_time_utc = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
 
     case api_client().actual() do
@@ -48,7 +48,7 @@ defmodule CarbonIntensity.Server do
 
         save_result(data)
 
-        setup_data_refresh(calculate_next_refresh())
+        schedule_load_actual(calculate_next_refresh())
         {:noreply, state}
 
       {:error, error_atom} when error_atom in [:malformed, :request_error] ->
@@ -57,7 +57,7 @@ defmodule CarbonIntensity.Server do
         )
 
         # try again in 10 seconds
-        setup_data_refresh(10_000)
+        schedule_load_actual(10_000)
 
         {:noreply, state}
 
@@ -68,10 +68,7 @@ defmodule CarbonIntensity.Server do
   end
 
   defp save_result(data) do
-    GenRMQ.Publisher.publish(
-      CarbonIntensity.Rabbitmq.StoreDataPublisher,
-      Jason.encode!(%{data: data})
-    )
+    CarbonIntensity.Rabbitmq.StoreDataPublisher.publish(data)
   end
 
   # returns the difference, in milliseconds, between current time and next refresh
@@ -101,11 +98,11 @@ defmodule CarbonIntensity.Server do
   end
 
   # Sets up refresh data.
-  defp setup_data_refresh(miliseconds_from_now) do
+  defp schedule_load_actual(miliseconds_from_now) do
     timeout = miliseconds_from_now
     log_refresh_info(timeout)
 
-    Process.send_after(self(), :get, timeout)
+    Process.send_after(self(), :get_actual, timeout)
   end
 
   # Logs refresh info.

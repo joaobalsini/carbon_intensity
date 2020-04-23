@@ -1,29 +1,41 @@
 defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
-  @behaviour GenRMQ.Consumer
+  use Broadway
 
-  def init() do
-    [
-      queue: "store_data_queue",
-      exchange: "store_data_exchange",
-      routing_key: "#",
-      prefetch_count: "10",
-      connection: "amqp://rabbitmq:rabbitmq@localhost:5672",
-      retry_delay_function: fn attempt -> :timer.sleep(2000 * attempt) end
-    ]
-  end
+  require Logger
+
+  alias Broadway.Message
 
   def start_link do
-    GenRMQ.Consumer.start_link(__MODULE__, name: __MODULE__)
+    Broadway.start_link(__MODULE__,
+      name: __MODULE__,
+      producer: [
+        module:
+          {BroadwayRabbitMQ.Producer,
+           queue: CarbonIntensity.Rabbitmq.StoreDataPublisher.queue_name(),
+           connection: [
+             username: "rabbitmq",
+             password: "rabbitmq"
+           ]}
+      ],
+      processors: [
+        default: [
+          concurrency: 100
+        ]
+      ],
+      batchers: [
+        default: [
+          batch_size: 1,
+          batch_timeout: 10_000,
+          concurrency: 1
+        ]
+      ]
+    )
   end
 
-  def consumer_tag() do
-    "store_data_consumer"
-  end
-
-  def handle_message(message) do
+  @impl true
+  def handle_message(_processor, %Message{data: data} = message, _context) do
     # this is internal data and we trust it
-    {:ok, %{"data" => %{"actual_intensity" => actual_intensity, "to" => to}}} =
-      Jason.decode(message.payload)
+    {:ok, %{"data" => %{"actual_intensity" => actual_intensity, "to" => to}}} = Jason.decode(data)
 
     timestamp =
       to
@@ -32,9 +44,22 @@ defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
       |> DateTime.to_unix(:microsecond)
 
     data = %CarbonIntensity.InfluxdbSerie{}
+
+    # convert timestamp to nanosecond
     data = %{data | timestamp: timestamp * 1000}
     data = %{data | fields: %{data.fields | actual_value: actual_intensity}}
 
-    CarbonIntensity.InfluxdbConnection.write(data, async: true)
+    Logger.info(
+      "INSERTING DATA FOR DATE #{to} INTO INFLUXDB. ACTUAL QUEUE SIZE: #{
+        inspect(CarbonIntensity.Rabbitmq.StoreDataPublisher.queue_size())
+      }"
+    )
+
+    CarbonIntensity.InfluxdbConnection.write(data)
+
+    message
   end
+
+  @impl true
+  def handle_batch(_batcher, messages, _batch_info, _context), do: messages
 end
