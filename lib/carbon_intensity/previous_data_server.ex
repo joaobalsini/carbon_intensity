@@ -25,8 +25,8 @@ defmodule CarbonIntensity.PreviousDataServer do
   @impl true
   @doc false
   def init(_) do
-    # Setup loading previous values after 10 seconds to ensure we previously loaded actual value
-    schedule_load_previous_values(10_000)
+    # Setup loading previous values after 2 seconds to ensure we previously loaded actual value
+    schedule_load_previous_values(2_000)
     {:ok, nil}
   end
 
