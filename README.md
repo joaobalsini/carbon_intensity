@@ -2,6 +2,7 @@
 
 ## Demo
 
+This demo shows one graphic being plotted as the past data is being loaded. Current data loading is not that fun, it loads a value when server starts and whenever minute is equal to 0 or 30.
 ![](./carbon_intensity_loader.gif)
 
 ## About
@@ -137,16 +138,3 @@ To clean saved data, after docker-compose down, simply run: `docker volume prune
 Credentials are stored inside the code and in dockerfile to make it simpler to run. In production please take proper care of replacing those with environment variables.
 
 Even if data is already stored, whenever we restart the application it will query and save all data again. InfluxDB will simply overwrite the data that already exists.
-
-
-
-
-
-
-
-
-
-
-
-
-
