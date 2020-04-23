@@ -96,7 +96,9 @@ It loads data from 2018 up to current date.
 
 ## Installation and Usage
 
-Clone the application: `git clone ...`
+Clone the application using ssh: `git clone git@github.com:joaobalsini/carbon_intensity.git`
+
+Enter directory: `cd carbon_intensity`
 
 Download libraries: `mix deps.get`
 
@@ -123,6 +125,22 @@ And `_build/prod/rel/carbon_intensity/bin/carbon_intensity start`
 On the docker compose file we also start Chronograph, an application to inspect data on InfluxDB. You can create a diagram based on the data. You can see the diagram on the video above.
 
 To access chronograph go to: http://localhost:8888/ and use login:password influxdb:influxdb.
+
+### Cleaning docker data
+
+To stop docker-compose simply run: `docker-compose down`
+
+To clean saved data, after docker-compose down, simply run: `docker volume prune`.
+
+## Other comments
+
+Credentials are stored inside the code and in dockerfile to make it simpler to run. In production please take proper care of replacing those with environment variables.
+
+Even if data is already stored, whenever we restart the application it will query and save all data again. InfluxDB will simply overwrite the data that already exists.
+
+
+
+
 
 
 
