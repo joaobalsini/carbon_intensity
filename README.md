@@ -138,3 +138,10 @@ To clean saved data, after docker-compose down, simply run: `docker volume prune
 Credentials are stored inside the code and in dockerfile to make it simpler to run. In production please take proper care of replacing those with environment variables.
 
 Even if data is already stored, whenever we restart the application it will query and save all data again. InfluxDB will simply overwrite the data that already exists.
+
+## Next steps
+
+- Stop `PreviousDataServer` as soon as all urls are queued in RabbitMQ.
+- Add environment variable to disable previous data loading when we want (so we don't start `PreviousDataServer`).
+- Add Grafana provisioning on docker-compose so we have something to show when we start.
+- Discover a way to test the whole pipeline using Broadway.
