@@ -27,7 +27,6 @@ defmodule CarbonIntensity.MixProject do
       {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
       {:mojito, "~> 0.6.3"},
       {:jason, "~> 1.2.0"},
-      {:mox, "~> 0.5", only: :test},
       {:gen_rmq, "~> 2.6.0"},
       {:instream, "~> 0.22"},
       {:broadway, "~> 0.6.0"},
@@ -38,6 +37,5 @@ defmodule CarbonIntensity.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 end

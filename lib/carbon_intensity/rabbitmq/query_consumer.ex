@@ -36,7 +36,7 @@ defmodule CarbonIntensity.Rabbitmq.QueryConsumer do
   def handle_message(_processor, %Message{data: data} = message, _context) do
     with {:ok, %{"url" => url}} <- Jason.decode(data),
          {:ok, data_list} <-
-           CarbonIntensity.ClientImplementation.previous(url) do
+           CarbonIntensity.Client.previous(url) do
       Logger.info(
         "LOADED QUERY FOR URL #{url} ACTUAL QUEUE SIZE: #{
           inspect(CarbonIntensity.Rabbitmq.QueryPublisher.queue_size())

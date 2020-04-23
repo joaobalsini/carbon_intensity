@@ -1,7 +1,7 @@
-defmodule CarbonIntensity.ClientImplementationTest do
+defmodule CarbonIntensity.ClientTest do
   use ExUnit.Case
 
-  alias CarbonIntensity.ClientImplementation
+  alias CarbonIntensity.Client
 
   describe "process_response/1" do
     test "should convert the json response into a map if received status code 200 together with valid body" do
@@ -13,7 +13,7 @@ defmodule CarbonIntensity.ClientImplementationTest do
              "{ \r\n  \"data\":[{ \r\n    \"from\": \"2020-04-21T23:00Z\",\r\n    \"to\": \"2020-04-21T23:30Z\",\r\n    \"intensity\": {\r\n      \"forecast\": 87,\r\n      \"actual\": 87,\r\n      \"index\": \"low\"\r\n    }\r\n  }]\r\n}"
          }}
 
-      assert ClientImplementation.process_response(response) ==
+      assert Client.process_response(response) ==
                {:ok,
                 %{
                   "data" => [
@@ -34,7 +34,7 @@ defmodule CarbonIntensity.ClientImplementationTest do
            body: "{ \r\n  \"data\":[{ \r\n    }"
          }}
 
-      assert {:error, %Jason.DecodeError{}} = ClientImplementation.process_response(response)
+      assert {:error, %Jason.DecodeError{}} = Client.process_response(response)
     end
 
     test "should return {:error, :not_found} if status code is 404" do
@@ -44,15 +44,15 @@ defmodule CarbonIntensity.ClientImplementationTest do
            status_code: 404
          }}
 
-      assert ClientImplementation.process_response(response) ==
+      assert Client.process_response(response) ==
                {:error, :not_found}
     end
 
     test "should return {:error, :request_error} if status code not 200 or 404" do
-      assert ClientImplementation.process_response({:ok, %{status_code: 500}}) ==
+      assert Client.process_response({:ok, %{status_code: 500}}) ==
                {:error, :request_error}
 
-      assert ClientImplementation.process_response(:error) == {:error, :request_error}
+      assert Client.process_response(:error) == {:error, :request_error}
     end
   end
 
@@ -68,7 +68,7 @@ defmodule CarbonIntensity.ClientImplementationTest do
         ]
       }
 
-      assert ClientImplementation.parse_result(response) ==
+      assert Client.parse_result(response) ==
                {:ok,
                 %CarbonIntensity.Data{
                   from: ~N[2020-04-21 23:00:00],
@@ -78,12 +78,12 @@ defmodule CarbonIntensity.ClientImplementationTest do
     end
 
     test "should return {:error, :malformed} if received a different input" do
-      assert ClientImplementation.parse_result(%{
+      assert Client.parse_result(%{
                "data" => %{}
              }) ==
                {:error, :malformed}
 
-      assert ClientImplementation.parse_result(%{
+      assert Client.parse_result(%{
                "data" => %{
                  "from" => "2020-04-21T23:00Z",
                  "to" => "2020-04-21T23:30Z",
@@ -92,12 +92,12 @@ defmodule CarbonIntensity.ClientImplementationTest do
              }) ==
                {:error, :malformed}
 
-      assert ClientImplementation.parse_result(%{
+      assert Client.parse_result(%{
                "data" => [%{}]
              }) ==
                {:error, :malformed}
 
-      assert ClientImplementation.parse_result(%{
+      assert Client.parse_result(%{
                "data" => [
                  %{
                    "from" => "2020-04-21T23:00Z",
@@ -125,7 +125,7 @@ defmodule CarbonIntensity.ClientImplementationTest do
         ]
       }
 
-      assert ClientImplementation.parse_result(response) == {:error, :malformed}
+      assert Client.parse_result(response) == {:error, :malformed}
 
       response = %{
         "data" => [
@@ -137,7 +137,7 @@ defmodule CarbonIntensity.ClientImplementationTest do
         ]
       }
 
-      assert ClientImplementation.parse_result(response) == {:error, :malformed}
+      assert Client.parse_result(response) == {:error, :malformed}
 
       response = %{
         "data" => [
@@ -149,7 +149,7 @@ defmodule CarbonIntensity.ClientImplementationTest do
         ]
       }
 
-      assert ClientImplementation.parse_result(response) == {:error, :malformed}
+      assert Client.parse_result(response) == {:error, :malformed}
     end
   end
 end

@@ -6,10 +6,7 @@ defmodule CarbonIntensity.ActualDataServer do
 
   require Logger
 
-  def api_client, do: Application.get_env(:carbon_intensity, :client)
-
   # Client API
-
   @doc """
   Starts refresher for getting data periodically.
   """
@@ -29,7 +26,7 @@ defmodule CarbonIntensity.ActualDataServer do
   def handle_info(:get_actual, state) do
     actual_time_utc = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
 
-    case api_client().actual() do
+    case CarbonIntensity.Client.actual() do
       {:ok, data} ->
         Logger.info("#{actual_time_utc} (UTC) - Successfully loaded data: #{inspect(data)}")
 

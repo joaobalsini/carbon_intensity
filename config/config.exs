@@ -1,7 +1,5 @@
 use Mix.Config
 
-config :carbon_intensity, :client, CarbonIntensity.ClientImplementation
-
 config :carbon_intensity, CarbonIntensity.Influxdb.Connection,
   database: "carbon_intensity",
   host: "localhost",
