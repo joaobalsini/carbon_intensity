@@ -1,4 +1,8 @@
 defmodule CarbonIntensity.Rabbitmq.QueryConsumer do
+  @moduledoc """
+  Processes "perfom query on url" requests from queries_queue.
+  """
+
   use Broadway
 
   require Logger

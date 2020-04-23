@@ -1,4 +1,8 @@
 defmodule CarbonIntensity.Rabbitmq.QueryPublisher do
+  @moduledoc """
+  Publishes "perfom query on url" requests into queries_queue. Those requests will be later processed by the `CarbonIntensity.Rabbitmq.QueryConsumer`.
+  """
+
   @behaviour GenRMQ.Publisher
 
   @rabbiqmq_server "amqp://rabbitmq:rabbitmq@localhost:5672"

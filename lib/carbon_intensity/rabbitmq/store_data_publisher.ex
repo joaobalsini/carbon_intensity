@@ -1,4 +1,8 @@
 defmodule CarbonIntensity.Rabbitmq.StoreDataPublisher do
+  @moduledoc """
+  Publishes "store data into influxdb" requests into store_data_queue. Those requests will be later processed by the `CarbonIntensity.Rabbitmq.StoreDataConsumer`.
+  """
+
   @behaviour GenRMQ.Publisher
 
   @rabbiqmq_server "amqp://rabbitmq:rabbitmq@localhost:5672"

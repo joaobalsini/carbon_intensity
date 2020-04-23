@@ -1,4 +1,8 @@
 defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
+  @moduledoc """
+  Processes "store data into influxdb" requests from store_data_queue.
+  """
+
   use Broadway
 
   require Logger
