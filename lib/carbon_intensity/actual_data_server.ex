@@ -51,11 +51,10 @@ defmodule CarbonIntensity.ActualDataServer do
     end
   end
 
-  # returns the difference, in milliseconds, between current time and next refresh
-  defp calculate_next_refresh(interval_in_minutes \\ 30) do
-    # gets current time
-    now = NaiveDateTime.utc_now()
-
+  @doc """
+  Calculates next refresh in milliseconds (to be passed to a timer later) by rounding the time using minutes precision.
+  """
+  def calculate_next_refresh(now \\ NaiveDateTime.utc_now(), interval_in_minutes \\ 30) do
     # adds 30 minutes, so we let the library to handle new hours/days/months/years
     updated_date = NaiveDateTime.add(now, interval_in_minutes * 60)
 
