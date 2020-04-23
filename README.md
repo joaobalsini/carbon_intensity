@@ -99,8 +99,11 @@ It loads data from 2018 up to current date.
 Clone the application: `git clone ...`
 
 Download libraries: `mix deps.get`
+
 Start a new shell and start containers: `docker-compose up`
+
 Wait a bit until everything starts
+
 Start application with iex: `iex -S mix`
 
 ### Running tests
@@ -112,6 +115,7 @@ Comments: Tests don't test the genservers or the pipeline. The untested code is 
 ### Running on production (with mix release)
 
 Run `MIX_ENV=prod mix release`
+
 And `_build/prod/rel/carbon_intensity/bin/carbon_intensity start`
 
 ### Seeing the results
