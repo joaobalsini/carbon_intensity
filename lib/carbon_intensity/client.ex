@@ -6,6 +6,8 @@ defmodule CarbonIntensity.Client do
   @type query_error :: :not_found | :request_error | Jason.DecodeError.t()
   @type error :: query_error | :malformed
   @type data :: %{from: NaiveDateTime.t(), to: NaiveDateTime.t(), actual_intensity: integer()}
+  @type url :: binary()
 
   @callback actual() :: {:error, error()} | {:ok, data()}
+  @callback previous(url()) :: {:error, error()} | {:ok, [data()]}
 end

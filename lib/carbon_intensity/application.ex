@@ -15,8 +15,17 @@ defmodule CarbonIntensity.Application do
         id: CarbonIntensity.Rabbitmq.StoreDataPublisher,
         start: {CarbonIntensity.Rabbitmq.StoreDataPublisher, :start_link, []}
       },
+      %{
+        id: CarbonIntensity.Rabbitmq.QueryConsumer,
+        start: {CarbonIntensity.Rabbitmq.QueryConsumer, :start_link, []}
+      },
+      %{
+        id: CarbonIntensity.Rabbitmq.QueryPublisher,
+        start: {CarbonIntensity.Rabbitmq.QueryPublisher, :start_link, []}
+      },
       CarbonIntensity.InfluxdbConnection,
-      {CarbonIntensity.ActualDataServer, []}
+      {CarbonIntensity.ActualDataServer, []},
+      {CarbonIntensity.PreviousDataServer, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
