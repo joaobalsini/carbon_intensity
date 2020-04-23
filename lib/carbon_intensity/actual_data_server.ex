@@ -6,45 +6,32 @@ defmodule CarbonIntensity.ActualDataServer do
 
   require Logger
 
-  alias __MODULE__, as: State
-
   def api_client, do: Application.get_env(:carbon_intensity, :client)
 
-  @doc false
-  defstruct [:from, :to, :actual]
-
-  @typedoc false
-  @type state :: %State{
-          from: binary(),
-          to: binary(),
-          actual: pos_integer()
-        }
   # Client API
 
   @doc """
   Starts refresher for getting data periodically.
   """
   def start_link(_) do
-    state = %State{}
-    GenServer.start_link(__MODULE__, state, name: __MODULE__)
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   # Callbacks
 
   @impl true
-  def init(%State{} = state) do
+  def init(_) do
     schedule_load_actual(1_000)
-    {:ok, state}
+    {:ok, nil}
   end
 
   @impl true
-  def handle_info(:get_actual, %State{} = state) do
+  def handle_info(:get_actual, state) do
     actual_time_utc = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
 
     case api_client().actual() do
       {:ok, data} ->
         Logger.info("#{actual_time_utc} (UTC) - Successfully loaded data: #{inspect(data)}")
-        state = Map.put(state, :data, data)
 
         save_result(data)
 
