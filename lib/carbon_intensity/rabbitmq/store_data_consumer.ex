@@ -23,40 +23,44 @@ defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
       ],
       processors: [
         default: [
-          concurrency: 100
+          concurrency: 10
         ]
       ],
       batchers: [
         default: [
-          batch_size: 1,
+          batch_size: 50,
           batch_timeout: 10_000,
-          concurrency: 1
+          concurrency: 10
         ]
       ]
     )
   end
 
   @impl true
-  def handle_message(_processor, %Message{data: data} = message, _context) do
-    # this is internal data and we trust it
-    {:ok, %{"data" => %{"actual" => actual, "to" => to, "from" => from}}} = Jason.decode(data)
+  def handle_message(_processor, %Message{} = message, _context) do
+    Message.update_data(message, fn data ->
+      # this is internal data and we trust it
+      {:ok, %{"data" => %{"actual" => actual, "to" => to, "from" => from}}} = Jason.decode(data)
+      to = NaiveDateTime.from_iso8601!(to)
+      from = NaiveDateTime.from_iso8601!(from)
+      %CarbonIntensity.Data{to: to, from: from, actual: actual}
+    end)
+  end
 
-    to = NaiveDateTime.from_iso8601!(to)
-    from = NaiveDateTime.from_iso8601!(from)
-
-    structured_data = %CarbonIntensity.Data{to: to, from: from, actual: actual}
+  @impl true
+  def handle_batch(_batcher, messages, _batch_info, _context) do
+    messages
+    |> Enum.map(fn %Message{data: %CarbonIntensity.Data{} = data} ->
+      data
+    end)
+    |> CarbonIntensity.Influxdb.Client.store_multiple()
 
     Logger.info(
-      "INSERTING DATA FOR DATE #{to} INTO INFLUXDB. ACTUAL QUEUE SIZE: #{
+      "INSERTING DATA FOR INTO INFLUXDB. ACTUAL QUEUE SIZE: #{
         inspect(CarbonIntensity.Rabbitmq.StoreDataPublisher.queue_size())
       }"
     )
 
-    CarbonIntensity.Influxdb.Client.store(structured_data)
-
-    message
+    messages
   end
-
-  @impl true
-  def handle_batch(_batcher, messages, _batch_info, _context), do: messages
 end
