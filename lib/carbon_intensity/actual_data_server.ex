@@ -7,9 +7,7 @@ defmodule CarbonIntensity.ActualDataServer do
   require Logger
 
   # Client API
-  @doc """
-  Starts refresher for getting data periodically.
-  """
+  @doc false
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
@@ -17,12 +15,14 @@ defmodule CarbonIntensity.ActualDataServer do
   # Callbacks
 
   @impl true
+  @doc false
   def init(_) do
     schedule_load_actual(1_000)
     {:ok, nil}
   end
 
   @impl true
+  @doc false
   def handle_info(:get_actual, state) do
     actual_time_utc = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
 
@@ -51,6 +51,29 @@ defmodule CarbonIntensity.ActualDataServer do
     end
   end
 
+  # Sets up refresh data.
+  defp schedule_load_actual(miliseconds_from_now) do
+    timeout = miliseconds_from_now
+    log_refresh_info(timeout)
+
+    Process.send_after(self(), :get_actual, timeout)
+  end
+
+  # Logs refresh info.
+  @spec log_refresh_info(integer()) :: :ok
+  defp log_refresh_info(timeout) do
+    refresh_time_in_utc =
+      NaiveDateTime.utc_now()
+      |> NaiveDateTime.add(timeout, :millisecond)
+      |> NaiveDateTime.to_iso8601()
+
+    Logger.info("Data refresh is scheduled at #{refresh_time_in_utc} (UTC)")
+  end
+
+  ########
+  ## INTERNAL FUNCTIONS - ONLY EXPOSED TO BE PROPERLY TESTED
+  #######
+
   @doc """
   Calculates next refresh in milliseconds (to be passed to a timer later) by rounding the time using minutes precision.
   """
@@ -74,24 +97,5 @@ defmodule CarbonIntensity.ActualDataServer do
 
     # returns the difference between actual time and next refresh
     NaiveDateTime.diff(next_refresh, now, :millisecond)
-  end
-
-  # Sets up refresh data.
-  defp schedule_load_actual(miliseconds_from_now) do
-    timeout = miliseconds_from_now
-    log_refresh_info(timeout)
-
-    Process.send_after(self(), :get_actual, timeout)
-  end
-
-  # Logs refresh info.
-  @spec log_refresh_info(integer()) :: :ok
-  defp log_refresh_info(timeout) do
-    refresh_time_in_utc =
-      NaiveDateTime.utc_now()
-      |> NaiveDateTime.add(timeout, :millisecond)
-      |> NaiveDateTime.to_iso8601()
-
-    Logger.info("Data refresh is scheduled at #{refresh_time_in_utc} (UTC)")
   end
 end
