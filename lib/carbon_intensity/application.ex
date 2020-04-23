@@ -6,27 +6,32 @@ defmodule CarbonIntensity.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      %{
-        id: CarbonIntensity.Rabbitmq.StoreDataConsumer,
-        start: {CarbonIntensity.Rabbitmq.StoreDataConsumer, :start_link, []}
-      },
-      %{
-        id: CarbonIntensity.Rabbitmq.StoreDataPublisher,
-        start: {CarbonIntensity.Rabbitmq.StoreDataPublisher, :start_link, []}
-      },
-      %{
-        id: CarbonIntensity.Rabbitmq.QueryConsumer,
-        start: {CarbonIntensity.Rabbitmq.QueryConsumer, :start_link, []}
-      },
-      %{
-        id: CarbonIntensity.Rabbitmq.QueryPublisher,
-        start: {CarbonIntensity.Rabbitmq.QueryPublisher, :start_link, []}
-      },
-      CarbonIntensity.Influxdb.Connection,
-      {CarbonIntensity.ActualDataServer, []},
-      {CarbonIntensity.PreviousDataServer, []}
-    ]
+    children =
+      if Mix.env() == :test do
+        []
+      else
+        [
+          %{
+            id: CarbonIntensity.Rabbitmq.StoreDataConsumer,
+            start: {CarbonIntensity.Rabbitmq.StoreDataConsumer, :start_link, []}
+          },
+          %{
+            id: CarbonIntensity.Rabbitmq.StoreDataPublisher,
+            start: {CarbonIntensity.Rabbitmq.StoreDataPublisher, :start_link, []}
+          },
+          %{
+            id: CarbonIntensity.Rabbitmq.QueryConsumer,
+            start: {CarbonIntensity.Rabbitmq.QueryConsumer, :start_link, []}
+          },
+          %{
+            id: CarbonIntensity.Rabbitmq.QueryPublisher,
+            start: {CarbonIntensity.Rabbitmq.QueryPublisher, :start_link, []}
+          },
+          CarbonIntensity.Influxdb.Connection,
+          {CarbonIntensity.ActualDataServer, []},
+          {CarbonIntensity.PreviousDataServer, []}
+        ]
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
