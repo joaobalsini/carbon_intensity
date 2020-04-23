@@ -152,4 +152,77 @@ defmodule CarbonIntensity.ClientTest do
       assert Client.parse_result(response) == {:error, :malformed}
     end
   end
+
+  describe "parse_results/1" do
+    test "should parse results and return a list of data" do
+      response = %{
+        "data" => [
+          %{
+            "from" => "2020-04-21T23:00Z",
+            "to" => "2020-04-21T23:30Z",
+            "intensity" => %{"forecast" => 87, "actual" => 87, "index" => "low"}
+          },
+          %{
+            "from" => "2020-04-21T23:00Z",
+            "to" => "2020-04-21T23:30Z",
+            "intensity" => %{"forecast" => 87, "actual" => 87, "index" => "low"}
+          }
+        ]
+      }
+
+      assert Client.parse_results(response) ==
+               {:ok,
+                [
+                  %CarbonIntensity.Data{
+                    from: ~N[2020-04-21 23:00:00],
+                    to: ~N[2020-04-21 23:30:00],
+                    actual: 87
+                  },
+                  %CarbonIntensity.Data{
+                    from: ~N[2020-04-21 23:00:00],
+                    to: ~N[2020-04-21 23:30:00],
+                    actual: 87
+                  }
+                ]}
+    end
+
+    test "should reject invalid results and return a list of data" do
+      response = %{
+        "data" => [
+          %{
+            "from" => "2020-04-21T23:00Z",
+            "to" => "2020-04-21T23:30Z",
+            "intensity" => %{"forecast" => 87, "actual" => 87, "index" => "low"}
+          },
+          %{
+            "from" => "2020-04-21T23:00Z",
+            "to" => "2020-04-21T23:30Z",
+            "intensity" => %{"forecast" => 87, "actual" => 87, "index" => "low"}
+          },
+          %{
+            "from" => "2020-04-21T23:00Z",
+            "to" => "2020-04-21T23:30Z",
+            "intensity" => %{"forecast" => 87, "actual" => nil, "index" => "low"}
+          },
+          %{},
+          "a"
+        ]
+      }
+
+      assert Client.parse_results(response) ==
+               {:ok,
+                [
+                  %CarbonIntensity.Data{
+                    from: ~N[2020-04-21 23:00:00],
+                    to: ~N[2020-04-21 23:30:00],
+                    actual: 87
+                  },
+                  %CarbonIntensity.Data{
+                    from: ~N[2020-04-21 23:00:00],
+                    to: ~N[2020-04-21 23:30:00],
+                    actual: 87
+                  }
+                ]}
+    end
+  end
 end

@@ -30,10 +30,9 @@ defmodule CarbonIntensity.Client do
           | {:ok, data()}
   def parse_result(%{
         "data" => [
-          %{"from" => _from, "to" => _to, "intensity" => %{"actual" => actual}} = result
+          %{} = result
         ]
-      })
-      when is_integer(actual),
+      }),
       do: do_parse(result)
 
   def parse_result(_other), do: {:error, :malformed}
@@ -53,7 +52,8 @@ defmodule CarbonIntensity.Client do
     {:ok, results}
   end
 
-  defp do_parse(%{"from" => from, "to" => to, "intensity" => %{"actual" => actual}}) do
+  defp do_parse(%{"from" => from, "to" => to, "intensity" => %{"actual" => actual}})
+       when is_integer(actual) do
     with {:ok, from_date} <- NaiveDateTime.from_iso8601(prepare_date_string_to_be_parsed(from)),
          {:ok, to_date} <- NaiveDateTime.from_iso8601(prepare_date_string_to_be_parsed(to)) do
       {:ok, %CarbonIntensity.Data{from: from_date, to: to_date, actual: actual}}
@@ -62,6 +62,8 @@ defmodule CarbonIntensity.Client do
         {:error, :malformed}
     end
   end
+
+  defp do_parse(_other), do: {:error, :malformed}
 
   @spec process_response(term) ::
           {:error, query_error()} | {:ok, map()}
