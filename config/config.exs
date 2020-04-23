@@ -2,7 +2,7 @@ use Mix.Config
 
 config :carbon_intensity, :client, CarbonIntensity.ClientImplementation
 
-config :carbon_intensity, CarbonIntensity.InfluxdbConnection,
+config :carbon_intensity, CarbonIntensity.Influxdb.Connection,
   database: "carbon_intensity",
   host: "localhost",
   auth: [method: :basic, username: "influxdb", password: "influxdb"],

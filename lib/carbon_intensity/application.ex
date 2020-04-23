@@ -23,7 +23,7 @@ defmodule CarbonIntensity.Application do
         id: CarbonIntensity.Rabbitmq.QueryPublisher,
         start: {CarbonIntensity.Rabbitmq.QueryPublisher, :start_link, []}
       },
-      CarbonIntensity.InfluxdbConnection,
+      CarbonIntensity.Influxdb.Connection,
       {CarbonIntensity.ActualDataServer, []},
       {CarbonIntensity.PreviousDataServer, []}
     ]

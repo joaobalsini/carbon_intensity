@@ -33,7 +33,7 @@ defmodule CarbonIntensity.ActualDataServer do
       {:ok, data} ->
         Logger.info("#{actual_time_utc} (UTC) - Successfully loaded data: #{inspect(data)}")
 
-        save_result(data)
+        CarbonIntensity.Influxdb.Client.store(data)
 
         schedule_load_actual(calculate_next_refresh())
         {:noreply, state}
@@ -52,10 +52,6 @@ defmodule CarbonIntensity.ActualDataServer do
         Logger.info("#{actual_time_utc} (UTC) - Error loading data #{inspect(other)} ")
         {:noreply, state}
     end
-  end
-
-  defp save_result(data) do
-    CarbonIntensity.Rabbitmq.StoreDataPublisher.publish(data)
   end
 
   # returns the difference, in milliseconds, between current time and next refresh

@@ -51,7 +51,7 @@ defmodule CarbonIntensity.ClientImplementation do
   defp do_parse(%{"from" => from, "to" => to, "intensity" => %{"actual" => actual}}) do
     with {:ok, from_date} <- NaiveDateTime.from_iso8601(prepare_date_string_to_be_parsed(from)),
          {:ok, to_date} <- NaiveDateTime.from_iso8601(prepare_date_string_to_be_parsed(to)) do
-      {:ok, %{from: from_date, to: to_date, actual_intensity: actual}}
+      {:ok, %CarbonIntensity.Data{from: from_date, to: to_date, actual: actual}}
     else
       _e ->
         {:error, :malformed}

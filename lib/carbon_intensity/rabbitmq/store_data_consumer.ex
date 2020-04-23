@@ -35,19 +35,12 @@ defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
   @impl true
   def handle_message(_processor, %Message{data: data} = message, _context) do
     # this is internal data and we trust it
-    {:ok, %{"data" => %{"actual_intensity" => actual_intensity, "to" => to}}} = Jason.decode(data)
+    {:ok, %{"data" => %{"actual" => actual, "to" => to, "from" => from}}} = Jason.decode(data)
 
-    timestamp =
-      to
-      |> NaiveDateTime.from_iso8601!()
-      |> DateTime.from_naive!("Etc/UTC")
-      |> DateTime.to_unix(:microsecond)
+    to = NaiveDateTime.from_iso8601!(to)
+    from = NaiveDateTime.from_iso8601!(from)
 
-    data = %CarbonIntensity.InfluxdbSerie{}
-
-    # convert timestamp to nanosecond
-    data = %{data | timestamp: timestamp * 1000}
-    data = %{data | fields: %{data.fields | actual_value: actual_intensity}}
+    structured_data = %CarbonIntensity.Data{to: to, from: from, actual: actual}
 
     Logger.info(
       "INSERTING DATA FOR DATE #{to} INTO INFLUXDB. ACTUAL QUEUE SIZE: #{
@@ -55,7 +48,7 @@ defmodule CarbonIntensity.Rabbitmq.StoreDataConsumer do
       }"
     )
 
-    CarbonIntensity.InfluxdbConnection.write(data)
+    CarbonIntensity.Influxdb.Client.store(structured_data)
 
     message
   end

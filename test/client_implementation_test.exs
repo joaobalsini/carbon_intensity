@@ -70,10 +70,10 @@ defmodule CarbonIntensity.ClientImplementationTest do
 
       assert ClientImplementation.parse_result(response) ==
                {:ok,
-                %{
+                %CarbonIntensity.Data{
                   from: ~N[2020-04-21 23:00:00],
                   to: ~N[2020-04-21 23:30:00],
-                  actual_intensity: 87
+                  actual: 87
                 }}
     end
 

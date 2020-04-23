@@ -1,4 +1,4 @@
-defmodule CarbonIntensity.InfluxdbSerie do
+defmodule CarbonIntensity.Influxdb.Serie do
   use Instream.Series
 
   series do
